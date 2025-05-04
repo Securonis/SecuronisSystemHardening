@@ -69,18 +69,14 @@ menu() {
 enable_standard_hardening() {
     echo "[+] Standard Kernel Hardening is Starting..."
     
-    # Önce yedek alalım
     backup_config
-    
-    # Bağımlılıkları kontrol edelim
+
     check_dependencies
     
-    # Dizinlerin varlığını kontrol edelim
     mkdir -p /etc/sysctl.d
     mkdir -p /etc/modprobe.d
     mkdir -p /etc/security/limits.d
 
-    # Kernel ayarlarını uygula
     if ! sysctl --system; then
         echo "[!] Error applying sysctl settings"
         return 1
@@ -226,7 +222,7 @@ EOF
     mkdir -p /etc/modprobe.d
 
     # Strict module restrictions
-    cat <<EOF > /etc.modprobe.d/secure.conf
+    cat <<EOF > /etc/modprobe.d/secure.conf
 # Disable unused filesystems
 install cramfs /bin/false
 install freevxfs /bin/false
@@ -415,17 +411,17 @@ enable_firewall() {
         fi
     fi
     
-    # Temel güvenlik kurallarını ekle
+
     ufw default deny incoming
     ufw default allow outgoing
     
-    # SSH bağlantısını koru
+
     ufw allow ssh
     
-    # UFW'yi etkinleştir
+
     echo "y" | ufw enable
     
-    # Durumu kontrol et
+
     if ufw status | grep -q "Status: active"; then
         echo "[✔] Firewall enabled and configured!"
     else
@@ -434,14 +430,14 @@ enable_firewall() {
     fi
 }
 
-# Disable Firewall
+
 disable_firewall() {
     echo "[!] Disabling firewall..."
     sudo ufw disable
     echo "[✔] Firewall disabled!"
 }
 
-# Main Menu Loop
+
 while true; do
     menu
     read -p "Enter your choice: " choice
