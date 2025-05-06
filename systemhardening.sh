@@ -123,17 +123,6 @@ EOF
     # Apply settings
     sysctl --system
 
-    # Basic module restrictions
-    mkdir -p /etc/modprobe.d
-    cat <<EOF > /etc/modprobe.d/secure.conf
-# Disable unused filesystems
-install cramfs /bin/false
-install freevxfs /bin/false
-install jffs2 /bin/false
-install hfs /bin/false
-install hfsplus /bin/false
-EOF
-
     # Set secure permissions
     chmod 600 /etc/shadow
     chmod 600 /etc/gshadow
@@ -218,32 +207,6 @@ EOF
     # Apply settings
     sysctl --system
 
-    # Ensure modprobe.d directory exists to avoid "No such file or directory" errors
-    mkdir -p /etc/modprobe.d
-
-    # Strict module restrictions
-    cat <<EOF > /etc/modprobe.d/secure.conf
-# Disable unused filesystems
-install cramfs /bin/false
-install freevxfs /bin/false
-install jffs2 /bin/false
-install hfs /bin/false
-install hfsplus /bin/false
-# install squashfs /bin/false  # Commented out as it may be needed for some systems
-# install udf /bin/false       # Commented out as it may be needed for optical media
-
-# Disable unused protocols
-install dccp /bin/false
-install sctp /bin/false
-install rds /bin/false
-install tipc /bin/false
-
-# Disable unused devices - commented out to prevent hardware issues
-# install usb-storage /bin/false    # Commented out to allow USB storage devices
-# install firewire-core /bin/false  # Commented out to allow FireWire devices if needed
-# install thunderbolt /bin/false    # Commented out to allow Thunderbolt devices if needed
-EOF
-
     # Set strict permissions
     chmod 600 /etc/shadow
     chmod 600 /etc/gshadow
@@ -293,7 +256,6 @@ restore_default_kernel_settings() {
     echo "[!] Restoring default kernel settings..."
     # Remove custom hardening settings
     rm -f /etc/sysctl.d/99-securonis-hardening.conf
-    rm -f /etc/modprobe.d/secure.conf
 
     # Apply default settings
     sysctl --system
