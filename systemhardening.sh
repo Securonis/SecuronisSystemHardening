@@ -54,15 +54,10 @@ menu() {
     echo "1) Enable Standard System Hardening"
     echo "2) Enable Maximum System Hardening"
     echo "3) Restore Default Kernel Settings"
-    echo "4) Enable AppArmor"
-    echo "5) Disable AppArmor"
-    echo "6) Enable SELinux"
-    echo "7) Disable SELinux"
-    echo "8) Disable System Logs"
-    echo "9) Enable System Logs"
-    echo "10) Enable Firewall"
-    echo "11) Disable Firewall"
-    echo "12) Exit"
+    echo "4) Enable Firewall"
+    echo "5) Disable Firewall"
+    echo "6) Check Firewall Status"
+    echo "7) Exit"
 }
 
 # Standard System Hardening
@@ -263,99 +258,6 @@ restore_default_kernel_settings() {
     echo "[✔] Default kernel settings have been restored!"
 }
 
-# Enable AppArmor
-enable_apparmor() {
-    echo "[+] Enabling AppArmor..."
-    if ! command -v apparmor_status &> /dev/null; then
-        echo "AppArmor is not installed! Installing AppArmor..."
-        apt-get update
-        apt-get install -y apparmor apparmor-utils
-    fi
-    systemctl start apparmor
-    systemctl enable apparmor
-    if command -v aa-enforce &> /dev/null; then
-        aa-enforce /etc/apparmor.d/*
-        echo "[✔] AppArmor has been enabled and configured!"
-    else
-        echo "AppArmor tools are not installed. Please install AppArmor tools first."
-    fi
-}
-
-# Disable AppArmor
-disable_apparmor() {
-    echo "[!] Disabling AppArmor..."
-    systemctl stop apparmor
-    systemctl disable apparmor
-    if command -v aa-disable &> /dev/null; then
-        aa-disable /etc/apparmor.d/*
-        echo "[✔] AppArmor has been disabled!"
-    else
-        echo "AppArmor tools are not installed."
-    fi
-}
-
-# Enable SELinux
-enable_selinux() {
-    echo "[+] Enabling SELinux..."
-    if [ -f /etc/selinux/config ]; then
-        setenforce 1
-        sed -i 's/SELINUX=disabled/SELINUX=enforcing/' /etc/selinux/config
-        echo "[✔] SELinux has been enabled!"
-    else
-        echo "SELinux is not installed! Installing SELinux..."
-        apt-get update
-        apt-get install -y selinux-utils selinux-basics
-        if [ -f /etc/selinux/config ]; then
-        setenforce 1
-        sed -i 's/SELINUX=disabled/SELINUX=enforcing/' /etc/selinux/config
-        else
-            echo "SELinux configuration file not found. Please check your installation."
-            return 1
-        fi
-        echo "SELinux has been installed and activated. Please reboot for changes to take effect."
-    fi
-}
-
-# Disable SELinux
-disable_selinux() {
-    echo "[!] Disabling SELinux..."
-    if [ -f /etc/selinux/config ]; then
-        setenforce 0
-        sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
-        echo "[✔] SELinux has been disabled! System reboot is recommended for changes to take full effect."
-    else
-        echo "SELinux is not installed."
-    fi
-}
-
-# Disable System Logs
-disable_system_logs() {
-    echo "[!] Disabling system logs..."
-    systemctl stop rsyslog
-    systemctl disable rsyslog
-    systemctl stop systemd-journald
-    systemctl disable systemd-journald
-
-    # Clear existing logs
-    rm -rf /var/log/*
-    journalctl --vacuum-time=1s
-
-    echo "[✔] System logs have been disabled!"
-}
-
-# Enable System Logs
-enable_system_logs() {
-    echo "[+] Enabling system logs..."
-    systemctl start rsyslog
-    systemctl enable rsyslog
-    systemctl start systemd-journald
-    systemctl enable systemd-journald
-
-    echo "[✔] System logs have been enabled!"
-}
-
-# MACsec Encryption functionality has been removed
-
 # Enable Firewall
 enable_firewall() {
     echo "[+] Enabling firewall..."
@@ -399,6 +301,12 @@ disable_firewall() {
     echo "[✔] Firewall disabled!"
 }
 
+# Check Firewall Status
+check_firewall_status() {
+    echo "[*] Checking firewall status..."
+    sudo ufw status 
+}
+
 
 while true; do
     menu
@@ -408,15 +316,10 @@ while true; do
         1) enable_standard_hardening ;;
         2) enable_maximum_hardening ;;
         3) restore_default_kernel_settings ;;
-        4) enable_apparmor ;;
-        5) disable_apparmor ;;
-        6) enable_selinux ;;
-        7) disable_selinux ;;
-        8) disable_system_logs ;;
-        9) enable_system_logs ;;
-        10) enable_firewall ;;
-        11) disable_firewall ;;
-        12) echo "Exiting..."; exit 0 ;;
+        4) enable_firewall ;;
+        5) disable_firewall ;;
+        6) check_firewall_status ;;
+        7) echo "Exiting..."; exit 0 ;;
         *) echo "Invalid choice! Please select a valid option.";;
     esac
 
